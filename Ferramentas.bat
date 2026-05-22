@@ -102,6 +102,7 @@ set /p r=Deseja continuar? » S/N
     )
 goto cac
 :cac-y
+echo.
 cls
 echo Limpando o cache
 taskkill /F /IM chrome.exe /T >nul 2>&1

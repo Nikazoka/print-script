@@ -1,4 +1,5 @@
 @echo off
+title Ferramentas
 reg query HKEY_USERS\S-1-5-19 >NUL || (
     echo Por favor, execute como administrador.
     pause >NUL

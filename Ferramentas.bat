@@ -27,6 +27,7 @@ if %ERRORLEVEL% neq 0 (
     echo [Atualizador] Voce ja esta usando a versao mais recente.
     del "%ARQUIVO_TEMP%"
 )
+pause
 :menu
 cls
 echo            ╔═══════════════════════════╗

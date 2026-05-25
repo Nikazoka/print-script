@@ -31,6 +31,7 @@ if %ERRORLEVEL% neq 0 (
 pause
 :menu
 cls
+echo v0.1
 echo            ╔═══════════════════════════╗
 echo            ║    Selecione uma opção    ║
 echo            ╠═══════════════════════════╣

@@ -13,7 +13,7 @@ call :bloq
 :: *********************************************************************************
 :menu
 cls
-echo v0.6
+echo v0.8
 echo             +---------------------------+
 echo             ^|    Selecione uma opcao    ^|
 echo             +---------------------------+
@@ -175,7 +175,6 @@ fc "%~f0" "%ARQUIVO_FINAL%" > nul
 if %ERRORLEVEL% neq 0 (
     echo [Atualizador] Nova versao encontrada^^! 
     echo Aplicando atualizacao...
-    pause
     copy /y "%ARQUIVO_FINAL%" "%~f0" > nul
     del "%ARQUIVO_TEMP%" > nul 2>&1
     del "%ARQUIVO_FINAL%" > nul 2>&1

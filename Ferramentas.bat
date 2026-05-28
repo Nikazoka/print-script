@@ -6,18 +6,14 @@ title Ferramentas
 chcp 437 >nul
 chcp 65001 > nul
 setlocal enabledelayedexpansion
-
-:: 1. Chama o atualizador primeiro
 call :update
-:: 2. Chama o bloqueio de horario depois
 call :bloq
-
 :: *********************************************************************************
 :: ********************************** METODO MENU **********************************
 :: *********************************************************************************
 :menu
 cls
-echo v0.6
+echo v0.7
 echo             +---------------------------+
 echo             ^|    Selecione uma opcao    ^|
 echo             +---------------------------+
@@ -146,6 +142,7 @@ if exist "%APPDATA%\AnyDesk\" (
     del /f /a /q "%APPDATA%\AnyDesk\*" >nul 2>&1
 )
 cls
+goto menu
 <nul set /p ="Reiniciando em 3"
 ping -n 2 127.0.0.1 >nul
 cls
@@ -156,7 +153,6 @@ cls
 ping -n 2 127.0.0.1 >nul     
 shutdown /r /f /t 0
 exit
-
 :: *********************************************************************************
 :: ***************************** ATUALIZAÇÃO DO SCRIPT *****************************
 :: *********************************************************************************

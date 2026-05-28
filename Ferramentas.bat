@@ -6,8 +6,12 @@ title Ferramentas
 chcp 437 >nul
 chcp 65001 > nul
 setlocal enabledelayedexpansion
+
+:: 1. Chama o atualizador primeiro
 call :update
+:: 2. Chama o bloqueio de horario depois
 call :bloq
+
 :: *********************************************************************************
 :: ********************************** METODO MENU **********************************
 :: *********************************************************************************
@@ -34,6 +38,7 @@ cls
 echo Opção errada! Pressione qualquer tecla para voltar ao menu...
 pause >nul
 goto menu
+
 :: *********************************************************************************
 :: ************************** METODO ATUALIZAR IMPRESSORA **************************
 :: *********************************************************************************
@@ -46,11 +51,13 @@ set /p r=Deseja continuar? » S/N
     if /i "%r%" equ "N" goto menu   
     call :erroEnt
 goto att
+
 :att-y
 cls
 set "DRIVE_FILE_ID=1mLtq2N-dy6ZUCH30QtxjbCXT6H3ZDNpC"
 set "PASTA_DESTINO=%USERPROFILE%\Documents\extensão"
 set "ARQUIVO_ZIP=%TEMP%\atualizacao_%RANDOM%.zip"
+
 if not exist "%PASTA_DESTINO%" (
     echo [AVISO] A pasta de destino nao existe. Criando em: "%PASTA_DESTINO%"
     mkdir "%PASTA_DESTINO%"
@@ -58,16 +65,19 @@ if not exist "%PASTA_DESTINO%" (
 )
 taskkill /F /IM chrome.exe /T > nul 2>&1
 timeout /t 2 /nobreak > nul
-set "URL_DOWNLOAD=https://docs.google.com/uc?export=download&id=%DRIVE_FILE_ID%&confirm=t"
+
+:: Link corrigido para evitar o erro do "confirm"
+set "URL_DOWNLOAD=https://drive.google.com/uc?export=download&id=%DRIVE_FILE_ID%"
 curl -L -g -o "%ARQUIVO_ZIP%" "%URL_DOWNLOAD%"
+
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERRO] Falha ao baixar o arquivo. Verifique a conexao.
     echo.
     pause
-    exit /b
+    goto menu
 )
-powershell -Command "Expand-Archive -Path '%ARQUIVO_ZIP%' -DestinationPath '%PASTA_DESTINO%' -Force"
+tar -xf "%ARQUIVO_ZIP%" -C "%PASTA_DESTINO%"
 if %ERRORLEVEL% neq 0 (
     echo.
     echo [ERRO] Erro ao extrair os arquivos. O arquivo baixado pode estar corrompido.
@@ -78,6 +88,7 @@ if %ERRORLEVEL% neq 0 (
 )
 if exist "%ARQUIVO_ZIP%" del "%ARQUIVO_ZIP%"
 goto menu
+
 :: *********************************************************************************
 :: *************************** METODO LIMPAR CACHE CHROME **************************
 :: *********************************************************************************
@@ -90,6 +101,7 @@ set /p r=Deseja continuar? » S/N
     if /i "%r%" equ "N" goto menu  
     call :erroEnt
 goto cac
+
 :cac-y
 cls
 echo Limpando o cache
@@ -97,16 +109,21 @@ taskkill /F /IM chrome.exe /T >nul 2>&1
 ping 127.0.0.1 -n 1 >nul
 cls
 echo Limpando o cache.
-del /q /s /f "%localappdata%\Google\Chrome\User Data\Default\Cache\*" >nul 2>&1
+if exist "%localappdata%\Google\Chrome\User Data\Default\Cache\" (
+    del /q /s /f "%localappdata%\Google\Chrome\User Data\Default\Cache\*" >nul 2>&1
+)
 ping 127.0.0.1 -n 1 >nul
 cls
 echo Limpando o cache..
-del /q /s /f "%localappdata%\Google\Chrome\User Data\Default\Network\Cookies" >nul 2>&1
+if exist "%localappdata%\Google\Chrome\User Data\Default\Network\Cookies" (
+    del /q /s /f "%localappdata%\Google\Chrome\User Data\Default\Network\Cookies" >nul 2>&1
+)
 ping 127.0.0.1 -n 1 >nul
 cls
 echo Cache Limpo!
 timeout 3 >nul
 goto menu
+
 :: *********************************************************************************
 :: ****************************** METODO RESET ANYDESK *****************************
 :: *********************************************************************************
@@ -118,12 +135,17 @@ set /p r=Deseja continuar? » S/N
     if /i "%r%" equ "N" goto menu  
     call :erroEnt
 goto any
+
 :any-y
 cls
-del /f "%ALLUSERSPROFILE%\AnyDesk\service.conf"
-del /f "%APPDATA%\AnyDesk\service.conf"
-del /f /a /q "%ALLUSERSPROFILE%\AnyDesk\*"
-del /f /a /q "%APPDATA%\AnyDesk\*"
+if exist "%ALLUSERSPROFILE%\AnyDesk\" (
+    del /f "%ALLUSERSPROFILE%\AnyDesk\service.conf" >nul 2>&1
+    del /f /a /q "%ALLUSERSPROFILE%\AnyDesk\*" >nul 2>&1
+)
+if exist "%APPDATA%\AnyDesk\" (
+    del /f "%APPDATA%\AnyDesk\service.conf" >nul 2>&1
+    del /f /a /q "%APPDATA%\AnyDesk\*" >nul 2>&1
+)
 cls
 <nul set /p ="Reiniciando em 3"
 ping -n 2 127.0.0.1 >nul
@@ -134,22 +156,24 @@ cls
 <nul set /p ="Reiniciando em 1"
 ping -n 2 127.0.0.1 >nul     
 shutdown /r /f /t 0
-:: *********************************************************************************
-:: ********************************* FIM DO RESET **********************************
-:: *********************************************************************************
+exit
 
 :: *********************************************************************************
 :: ***************************** ATUALIZAÇÃO DO SCRIPT *****************************
 :: *********************************************************************************
 :update
+:: Com RANDOM para furar o cache do GitHub
 set "URL_SCRIPT=https://raw.githubusercontent.com/Nikazoka/print-script/refs/heads/main/Ferramentas.bat?v=%RANDOM%"
 set "ARQUIVO_TEMP=%TEMP%\script_novo.bat"
 curl -s -L -o "%ARQUIVO_TEMP%" "%URL_SCRIPT%"
 if not exist "%ARQUIVO_TEMP%" (
     echo [Aviso] Falha ao verificar atualizacoes. Iniciando versao offline...
-    goto :menu
+    timeout /t 2 > nul
+    exit /b
 )
-    fc "%~f0" "%ARQUIVO_TEMP%" > nul
+
+:: Comparação do código
+fc "%~f0" "%ARQUIVO_TEMP%" > nul
 if %ERRORLEVEL% neq 0 (
     echo [Atualizador] Nova versao encontrada! Aplicando atualizacao...
     copy /y "%ARQUIVO_TEMP%" "%~f0" > nul
@@ -159,16 +183,13 @@ if %ERRORLEVEL% neq 0 (
     start "" "%~f0"
     exit
 ) else (
-    echo [Atualizador] Voce ja esta usando a versao mais   recente.
     del "%ARQUIVO_TEMP%"
 )
-ping 127.0.0.1 -n 2 >nul
 exit /b
+
 :: *********************************************************************************
 :: ************************************ BLOQUEIO ***********************************
 :: *********************************************************************************
-::LEQ (Menor ou igual a)
-::GEQ (Maior ou igual a)
 :bloq
 cd /d "%~dp0"
 reg query HKEY_USERS\S-1-5-19 >NUL || (
@@ -192,6 +213,7 @@ echo Disponível entre 7h - 12h e 14h - 17h
 echo Pressione qualquer tecla para fechar...
 pause >nul
 exit
+
 :: *********************************************************************************
 :: ************************************ ENTRADA ************************************
 :: *********************************************************************************
@@ -207,6 +229,7 @@ exit
     ping -n 2 127.0.0.1 >nul     
     cls
 exit /b
+
 :: *********************************************************************************
 :: ************************************** N8N **************************************
 :: *********************************************************************************
@@ -218,6 +241,7 @@ start http://localhost:5678
 echo Processo concluido!
 ping 127.0.0.1 -n 2 >nul
 goto menu
+
 :: *********************************************************************************
 :: ************************************* FLUSH *************************************
 :: *********************************************************************************

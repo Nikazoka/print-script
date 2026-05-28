@@ -1,4 +1,13 @@
+@echo off
+mode con:cols=50 lines=15
+powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $W=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width; $H=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height; $code='using System; using System.Runtime.InteropServices; public class Win { [DllImport(\"user32.dll\")] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr h, int X, int Y, int cx, int cy, uint uFlags); [DllImport(\"kernel32.dll\")] public static extern IntPtr GetConsoleWindow(); }'; Add-Type -TypeDefinition $code; [Win]::SetWindowPos([Win]::GetConsoleWindow(), [IntPtr]::Zero, ($W-450)/2, ($H-300)/2, 0, 0, 5);"
+cls
+title Ferramentas
+chcp 437 >nul
+chcp 65001 > nul
+setlocal enabledelayedexpansion
 call :update
+call :bloq
 :: *********************************************************************************
 :: ********************************** METODO MENU **********************************
 :: *********************************************************************************
@@ -129,56 +138,19 @@ shutdown /r /f /t 0
 :: ********************************* FIM DO RESET **********************************
 :: *********************************************************************************
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 :: *********************************************************************************
 :: ***************************** ATUALIZAÇÃO DO SCRIPT *****************************
 :: *********************************************************************************
 :update
-@echo off
-mode con:cols=50 lines=15
-powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $W=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width; $H=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height; $code='using System; using System.Runtime.InteropServices; public class Win { [DllImport(\"user32.dll\")] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr h, int X, int Y, int cx, int cy, uint uFlags); [DllImport(\"kernel32.dll\")] public static extern IntPtr GetConsoleWindow(); }'; Add-Type -TypeDefinition $code; [Win]::SetWindowPos([Win]::GetConsoleWindow(), [IntPtr]::Zero, ($W-450)/2, ($H-300)/2, 0, 0, 5);"
-cls
-title Ferramentas
-chcp 437 >nul
-chcp 65001 > nul
-cd /d "%~dp0"
-reg query HKEY_USERS\S-1-5-19 >NUL || (
-    echo Por favor, execute como administrador.
-    pause >NUL
-    exit
-)
-setlocal enabledelayedexpansion
-call :bloq
-set "URL_SCRIPT=https://raw.githubusercontent.com/Nikazoka/print-script/refs/heads/main/Ferramentas.bat"
+set "URL_SCRIPT=https://raw.githubusercontent.com/Nikazoka/print-script/refs/heads/main/Ferramentas.bat?v=%RANDOM%"
 set "ARQUIVO_TEMP=%TEMP%\script_novo.bat"
 curl -s -L -o "%ARQUIVO_TEMP%" "%URL_SCRIPT%"
 if not exist "%ARQUIVO_TEMP%" (
     echo [Aviso] Falha ao verificar atualizacoes. Iniciando versao offline...
     goto :menu
 )
-if %ERRORLEVEL% neq 0 (
     fc "%~f0" "%ARQUIVO_TEMP%" > nul
+if %ERRORLEVEL% neq 0 (
     echo [Atualizador] Nova versao encontrada! Aplicando atualizacao...
     copy /y "%ARQUIVO_TEMP%" "%~f0" > nul
     del "%ARQUIVO_TEMP%"
@@ -198,6 +170,12 @@ exit /b
 ::LEQ (Menor ou igual a)
 ::GEQ (Maior ou igual a)
 :bloq
+cd /d "%~dp0"
+reg query HKEY_USERS\S-1-5-19 >NUL || (
+    echo Por favor, execute como administrador.
+    pause >NUL
+    exit
+)
 set "b=%time:~0,2%"
 set "b=%b: =%"
 if %b% GEQ 7 ( 
